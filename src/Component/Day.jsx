@@ -1,15 +1,13 @@
-import Montly from './Component/Montly';
-import React from 'react';
-import { Week } from './Component/Week';
-import Day from './Component/Day';
+import React from 'react'
 import moment from "moment";
-import useApi from './CustomHooks/useApi';
-function App(props) {
+import useApi from "../CustomHooks/useApi";
+import TableIndex from '../Table/TableIndex'
+const Day = () => {
   const apitest=useApi();
   const datas = {}
-  const monthWise = apitest[0].reduce((acc, tasks)=>{
-    const key = moment.months(new Date(tasks['task_date']).getMonth())
-    const day = moment(new Date(tasks['task_date'])).format('dddd')
+  const dayWise = apitest[0].reduce((acc, tasks)=>{
+    // const key = moment(new Date(tasks['task_date'])).day().format()
+    const key = moment(new Date(tasks['task_date'])).format('dddd')
     const actualHour = tasks.actual_out && moment((tasks.actual_out)).diff(tasks.actual_in, 'minutes')
     datas[key] = datas[key]? [...datas[key], {
       actualHours: tasks.actual_in,
@@ -23,14 +21,14 @@ function App(props) {
     if(acc[key]){
       acc[key] = {
         ...acc[key], 
-        contractedHours: acc[key].contractedHours + apitest[1][day],
+        contractedHours: acc[key].contractedHours + apitest[1][key],
         actualHours: +((acc[key].actualHours + (actualHour || 0)/60)).toFixed(2)
       }
 
     }
     else{
       acc[key] = {
-        contractedHours: apitest[1][day],
+        contractedHours: apitest[1][key],
         actualHours: +((actualHour || 0)/60).toFixed(2)
       }
     }
@@ -38,17 +36,14 @@ function App(props) {
   
     return acc
   }, {})
+
   return (
-    <div className="App">
-      <Montly monthWise={monthWise}/>
-      <br/>
-      <br/>
-      <Week months={Object.keys(monthWise).map((item,index) => item)}/>
-      <br/>
-      <br/>
-      <Day/>
-    </div>
+    <div className="table-data">
+    <TableIndex header={["Day", "Contract Hours","Actual Hours"]}
+    wise={dayWise}
+    />
+ </div>
   )
 }
 
-export default App;
+export default Day
